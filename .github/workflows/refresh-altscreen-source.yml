@@ -1,0 +1,55 @@
+name: Refresh AltScreen editable source release asset
+
+# Only after a passing main push CI; never build, replace or modify the car-tested installer.
+on:
+  workflow_run:
+    workflows: ["Source and v8S release integrity"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: altscreen-v1-source-publication
+  cancel-in-progress: false
+
+jobs:
+  update-source:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Verify verified binary release stays unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh release view altscreen-v1.0 --json isPrerelease --jq .isPrerelease)" = false
+          mkdir -p "$RUNNER_TEMP/v8s-reference"
+          gh release download altscreen-v1.0 --pattern 'AltScreen-v1.0-install.zip' --dir "$RUNNER_TEMP/v8s-reference"
+          echo "162792d28e1a91ade216f41de6b8ff30f848955e285d7de990b34c64fcb7b0ae  $RUNNER_TEMP/v8s-reference/AltScreen-v1.0-install.zip" | sha256sum -c -
+          python3 altscreen/tools/verify_public_source.py "$RUNNER_TEMP/v8s-reference/AltScreen-v1.0-install.zip"
+      - name: Assemble and validate new complete editable source ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/package_altscreen_source.py "$RUNNER_TEMP/AltScreen-v1.0-source.zip"
+          test -s "$RUNNER_TEMP/AltScreen-v1.0-source.zip"
+      - name: Update source-only asset and release documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release upload altscreen-v1.0 "$RUNNER_TEMP/AltScreen-v1.0-source.zip#Editable source with renderer provenance, AWK scripts and current build docs" --clobber
+          gh release edit altscreen-v1.0 --notes-file altscreen/RELEASE_NOTES.md
+          test "$(gh release view altscreen-v1.0 --json assets --jq '[.assets[].name] | sort | join(",")')" = "AltScreen-v1.0-install.zip,AltScreen-v1.0-source.zip"
+          gh release download altscreen-v1.0 --pattern 'AltScreen-v1.0-source.zip' --dir "$RUNNER_TEMP/v8s-reference"
+          cmp "$RUNNER_TEMP/AltScreen-v1.0-source.zip" "$RUNNER_TEMP/v8s-reference/AltScreen-v1.0-source.zip"
+          sha256sum "$RUNNER_TEMP/v8s-reference/AltScreen-v1.0-install.zip" "$RUNNER_TEMP/v8s-reference/AltScreen-v1.0-source.zip"
