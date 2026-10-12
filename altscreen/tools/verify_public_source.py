@@ -26,7 +26,7 @@ for name in [
 ]:
     assert (ROOT/name).is_file(),name
 # Guard recovered renderer source against accidental rewriting.
-assert __import__("hashlib").sha1(b"blob 10999\\0" + (ROOT/"renderer/k2161/vc_render.c").read_bytes()).hexdigest() == "9c2185f6a3ea099177f6c4fb9f88d45dc7da595e"
+assert __import__("hashlib").sha1(b"blob 10999" + bytes([0]) + (ROOT/"renderer/k2161/vc_render.c").read_bytes()).hexdigest() == "9c2185f6a3ea099177f6c4fb9f88d45dc7da595e"
 upstream=(ROOT/"renderer/upstream/vc_render.c").read_text()
 assert "NvSSVideoDecode" in upstream and "AV11" in upstream
 assert "VC" in (ROOT/"README.md").read_text() or "CarPlay" in (ROOT/"README.md").read_text()
