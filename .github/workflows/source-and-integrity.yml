@@ -20,7 +20,8 @@ jobs:
       - name: Shell syntax and Python syntax
         run: |
           set -eu
-          for f in altscreen/build.sh altscreen/java/build_java_release.sh altscreen/renderer/build_renderer.sh altscreen/deployment/custom.sh altscreen/deployment/mib2high-lvds-control.sh; do sh -n "$f"; done
+          bash -n altscreen/build.sh
+          for f in altscreen/java/build_java_release.sh altscreen/renderer/build_renderer.sh altscreen/deployment/custom.sh altscreen/deployment/mib2high-lvds-control.sh; do sh -n "$f"; done
           python3 -m py_compile altscreen/tools/verify_public_source.py altscreen/tools/verify_current_native.py altscreen/java/verify_release_classes.py
       - name: Compile and run the exact v8S C control state machine on host
         run: |
