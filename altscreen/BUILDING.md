@@ -40,6 +40,8 @@ QNX_HOST=/path/to/qnx-host QNX_TARGET=/path/to/qnx-target \
   sh altscreen/renderer/build_renderer.sh
 ```
 
+The source tree also contains [`renderer/k2161/vc_render.c`](renderer/k2161/vc_render.c), recovered exactly from this project's K2161 GEN2/AV11 checkpoint. This code differs from the upstream renderer's defaults. To compile **that adapted checkpoint** instead, with the same licensed QNX environment, pass its C file to the documented `qcc -Vgcc_ntoarmv7le -mfloat-abi=softfp -O2 -g -std=gnu99 -Wall -Wextra -lsocket` build recipe. This test was performed with the archived toolchain and generated a valid ARM ELF, but its hash did not match the car-tested v8S binary. See [provenance](renderer/PROVENANCE.md).
+
 The renderer is invoked with `--out 1 --layer 58 --w 1440 --h 542 --fps 30 --ts wall` by the **unchanged** controller. The released v8S executable itself is hash-preserved. **The exact compiled v8S renderer's adaptation/source correspondence has not been proven**; see `renderer/PROVENANCE.md`. Do not swap this source-built renderer into v8S and claim it has passed car tests.
 
 ## SD installer
