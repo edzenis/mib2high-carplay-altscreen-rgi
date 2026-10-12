@@ -1,4 +1,6 @@
-# Build
+# RGI v1.1 — historical standalone build
+
+For the **AltScreen v1.0** source and installer build paths, use [AltScreen BUILDING](../altscreen/BUILDING.md). The instructions below apply only to RGI v1.1.
 
 ## Native library
 

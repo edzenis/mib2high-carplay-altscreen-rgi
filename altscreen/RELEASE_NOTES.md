@@ -29,3 +29,8 @@ Unzip the installer ZIP to the SD-card root, run M.I.B. `mod/custom.sh`, then re
 The original v8S installer README was authored before the final car test and still describes its *then-current* offline validation status. **The later v8S car test confirmed the left instruction card layout; that archived README is intentionally not rewritten because the binary package is unchanged.** Dynamic layout behavior can vary by app and session.
 
 See `altscreen/README.md` and `altscreen/BUILDING.md` in the repository for features, architecture, caveats and development instructions.
+
+
+## Public source distribution clarification (post-release)
+
+The v1.0 compiled installer is **unchanged**. Source-publication updates provide the exact installer AWK scripts and a pinned upstream copy of the GPL-3.0 renderer source, plus updated instructions and integrity tests. Exact historical v8S renderer **binary/source parity is still unproven**; these additions must not be described as a full bit-for-bit reproducible build. The release ZIP source asset may be refreshed with documentation/source complements without modifying the tested installer.

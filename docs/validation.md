@@ -1,4 +1,6 @@
-# Vehicle validation
+# RGI v1.1 — vehicle validation
+
+For subsequent **AltScreen v1.0** car tests and known limitations, see [AltScreen release notes](../altscreen/RELEASE_NOTES.md).
 
 ## Baseline transport validation
 

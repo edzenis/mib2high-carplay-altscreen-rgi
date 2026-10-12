@@ -64,3 +64,8 @@ The source package preserves the v8S source and configuration. Runtime code has 
 ## Credits
 
 Includes contributions or concepts derived from LuKa's [mib2q-carplay-rgi](https://github.com/luka-dev/mib2q-carplay-rgi) and community research into MHI2 AltScreen such as [Joey's MHI2-altScreen](https://github.com/joeyQuery/MHI2-altScreen). Preserve existing source copyright notices and upstream licenses. Refer to the repository `NOTICE.md` for provenance.
+
+
+## Source publication / licensing
+
+The compiled v8S installer is intentionally unchanged. Editable installer AWK scripts and the pinned GPL-3.0 renderer upstream source are now included; see [build instructions](BUILDING.md), [renderer provenance](renderer/PROVENANCE.md) and [archived-manifest scope](ARCHIVED_MANIFEST_SCOPE.md). These additions do not constitute evidence that the exact v8S renderer executable has been reproducibly rebuilt.

@@ -20,6 +20,10 @@ AltScreen receives a second CarPlay video stream for the instrument cluster. It 
 
 ## Source and development
 
+**Source-build scope:** The original RGI and AltScreen each have their own build instructions. The public AltScreen source now includes the pinned upstream renderer code and exact AWK installer scripts, with the historical renderer binary's unreproduced adaptations explicitly documented. Licensing is **per component**, not a blanket license for everything: see [LICENSE](LICENSE) and [renderer provenance](altscreen/renderer/PROVENANCE.md).
+
+
+
 The \`main\` branch holds public stable source; \`dev\` is for future changes. AltScreen v1.0 source lives in [\`altscreen/\`](altscreen/) and [build notes](altscreen/BUILDING.md) explain toolchains and prerequisites. Change editable source and rebuild; never patch compiled binaries or Java bytecode.
 
 ---

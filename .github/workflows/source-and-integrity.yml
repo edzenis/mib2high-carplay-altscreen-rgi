@@ -1,0 +1,36 @@
+name: Source and v8S release integrity
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check source, exact AWK scripts, and docs
+        run: python3 altscreen/tools/verify_public_source.py
+      - name: Shell syntax and Python syntax
+        run: |
+          set -eu
+          for f in altscreen/build.sh altscreen/java/build_java_release.sh altscreen/renderer/build_renderer.sh altscreen/deployment/custom.sh altscreen/deployment/mib2high-lvds-control.sh; do sh -n "$f"; done
+          python3 -m py_compile altscreen/tools/verify_public_source.py altscreen/tools/verify_current_native.py altscreen/java/verify_release_classes.py
+      - name: Compile and run the exact v8S C control state machine on host
+        run: |
+          cc -std=gnu99 -O0 -pthread -ffunction-sections -fdata-sections altscreen/tests/test_v8s_control_mock.c -Wl,--gc-sections -ldl -o /tmp/test_v8s_control
+          /tmp/test_v8s_control
+      - name: Verify unchanged car-tested binary installer against release manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/altscreen-audit
+          gh release download altscreen-v1.0 --pattern 'AltScreen-v1.0-install.zip' --dir /tmp/altscreen-audit
+          echo '162792d28e1a91ade216f41de6b8ff30f848955e285d7de990b34c64fcb7b0ae  /tmp/altscreen-audit/AltScreen-v1.0-install.zip' | sha256sum -c -
+          python3 altscreen/tools/verify_public_source.py /tmp/altscreen-audit/AltScreen-v1.0-install.zip

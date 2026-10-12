@@ -21,4 +21,9 @@ done
 echo "V8S_SOURCE_ONLY_DIRECT_C_BUILD=1"
 qcc -shared "${FLAGS[@]}" "${OBJ[@]}" -lsocket -lc -Wl,--no-undefined \
   -o "$D/output/libmib2high-carplay-rgi.so"
-python3 "$D/tools/verify_v8i.py"
+# Historical parity against unpublished v8g reference is OPTIONAL, not a public build requirement.
+# Verify the output is a QNX ARM ELF and has expected exported names, without private binaries.
+python3 "$D/tools/verify_current_native.py" "$D/output/libmib2high-carplay-rgi.so"
+if [ "${V8I_HISTORICAL_PARITY:-0}" = "1" ]; then
+  python3 "$D/tools/verify_v8i.py"
+fi

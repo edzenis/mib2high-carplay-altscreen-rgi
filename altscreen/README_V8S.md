@@ -1,5 +1,8 @@
 # K2161 v8S — v8N left card + completion-driven CarPlay control
 
+> **Public-release note (October 2026):** This is the historical v8S *offline* build/test report. AltScreen v1.0 was subsequently tested on the Audi Q7 4M; see [AltScreen v1.0 release notes](RELEASE_NOTES.md). Do not read the old statement "no real iPhone session" as the current release validation status.
+
+
 Baseline: v8R, **offline-validated only**, never substitute for vehicle results.
 All changed runtime code is rebuilt from C source using saved QNX 6.5 ARMv7 GCC 4.9.4.
 No ELF, object-file, Java JAR, bytecode, or other compiled binary was patched.

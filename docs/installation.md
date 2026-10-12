@@ -1,6 +1,8 @@
-# Installation requirements
+# RGI v1.1 — standalone integration reference
 
-This repository does not include an automated installer. Integration into an MHI2 unit should be performed only by someone familiar with the target firmware and recovery procedure.
+**Scope:** These steps describe the original standalone **RGI v1.1** release, not AltScreen v1.0. **AltScreen has its own tested SD-card installer and rollback:** see [AltScreen installation](../altscreen/README.md).
+
+The standalone RGI source described below does not include an automated installer. Integration into an MHI2 unit should be performed only by someone familiar with the target firmware and recovery procedure.
 
 ## 1. iAP2 message directions
 
