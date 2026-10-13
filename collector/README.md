@@ -1,152 +1,49 @@
-# MIB2 High Software Collector
+# MIB2 High Software Collector — v1.1.0-rc1
 
-`custom.sh` is a read-only research collector for Harman/QNX **MIB2 High / MHI2** units. It is intended to collect software identification and the firmware files that may be relevant to CarPlay RGI, navigation, BAP, FPK/cluster integration, and related dependencies from firmware variants that are not yet available to the project maintainer.
+This release candidate replaces v1.0.2's command assumptions with **runtime capability tests** and collects a broader set of firmware code/configuration for AltScreen, CarPlay RGI and cross-firmware porting. It is intended for Harman MHI2/QNX 6.5 through M.I.B. It does not install hooks, patch firmware, modify coding, or remount firmware filesystems.
 
-Current collector version: **1.0.2**
+**Status:** Release candidate. Host/simulated-QNX tests passed. This exact script **has not yet been executed on a physical MMI** and must not be represented as car-tested.
 
-## What it does
+## Install and run
 
-The collector:
+Copy `mod/custom.sh` from the release ZIP to the **M.I.B. SD card** as `/mod/custom.sh`. Back up any previous custom script first. Use the M.I.B. SD card in SD1, then on the vehicle open:
 
-- checks the available commands and selects compatible fallback methods before collection starts;
-- verifies that the SD card is actually writable by creating, reading back, renaming, deleting, and syncing a test file;
-- detects M.I.B.'s `/net/mmx` layout as well as direct/local QNX filesystem layouts;
-- records vehicle/software identifiers, system information, mounts, filesystem information, and tool capabilities;
-- searches known and discovered firmware locations for relevant executables, libraries, and configuration/metadata files;
-- searches by known filenames, filename patterns, relevant embedded strings, and direct shared-library dependencies;
-- preserves the original target filesystem paths in the collected copy;
-- records checksums and a detailed operation log;
-- performs final SD-card sync and verification before displaying **SAFE TO REMOVE THE SD CARD**.
+`GEM → M.I.B. → Advanced Settings → Run /mod/custom.sh from m.i.b. SD`
 
-The collector does **not** remount firmware filesystems, patch binaries, change permissions, modify coding/configuration, stop or restart services, or write to the vehicle firmware. Its intended writes are only to the verified removable SD/USB output location.
+The script prints eight numbered stages and clear command availability results to the MMI screen. Do not remove the SD until it explicitly states `SAFE TO REMOVE THE SD CARD`. On a failure, the screen shows the failed stage, the reason, and SD-removal guidance. The script never automatically reboots the car.
 
-## Requirements
+## Ordered workflow
 
-- Harman/QNX MIB2 High / MHI2 unit.
-- A working [M.I.B. - More Incredible Bash](https://github.com/Mr-MIBonk/M.I.B._More-Incredible-Bash) installation/SD card.
-- The M.I.B. SD card must be used in **SD1** for the normal GEM launcher workflow.
-- Enough free space on the SD card for the collected files.
+1. **SD preflight.** Find a removable SD mount, test directory creation, write/read-back, rename, deletion and `sync`. If the test fails, try `mount -uw` **only for that removable SD mount**, then repeat the test. If it still fails, stop with the reason on screen. Firmware mounts are never remounted.
+2. **Command audit.** List all command availability results on screen and in `capabilities.txt`. Test the actual required command options on a small file (e.g. `find -name`, `grep -i -E`, `awk tolower`, `mkdir -p`, `df -k`, copier and checksums). Stop if mandatory features are missing; use supported fallbacks or mark diminished coverage for optional missing tools. K2161 commonly lacks external `tr`, `date`, `strings`, `cksum`, `sha256sum`, and `grep -a`.
+3. **System details.** Probe diagnostic command arguments before using them. Save supported `uname`, `pidin`, `netstat`, mount and filesystem outputs plus SD space information.
+4. **Filesystem discovery.** Recursively inventory firmware code/configuration roots (QNX-direct or `/net/mmx`), not merely a fixed list of expected filenames. Never crawl SD, navigation-map/media collections, or ordinary user storage as an output.
+5. **Filename collection.** Select executables/libraries/configuration by broad case-insensitive naming and component paths, including CarPlay, AirPlay, iAP2, `mm-ipod`, `lsd.jxe`, DSI, HMI, navigation, BAP, cluster, VC/HUD, ViewAreas, touchpad/rotary and firmware identity.
+6. **Content discovery.** Search further plausible code/config files (max 16 MiB per searched file) using *only tested* `strings`/`grep` capabilities. If `strings` and `awk` work, extract and resolve direct `.so` dependency names against the complete inventory. Content-based binary matching without `strings` is best-effort and is explicitly marked as a limitation.
+7. **Integrity checks.** Preserve canonical firmware-relative paths; copy to temporary SD files; validate source vs copied length; verify checksum if a tested hash tool is present; atomically rename copied files; verify every manifest-listed saved file and fail if any file could not be copied. If `df -k` is parseable, retain at least a 512 MiB SD free-space reserve.
+8. **Flush and finish.** Write a truthful `COMPLETE` or `COMPLETE_WITH_LIMITATIONS` marker, sync, read back and sync again before stating it is safe to remove SD. If synchronization fails, remove the success marker where possible and write `COLLECTION_INCOMPLETE.txt`.
 
-This collector is designed for firmware research and has been syntax-tested and exercised against synthetic direct-QNX and M.I.B. `/net/mmx` layouts. New firmware variants can still expose layouts or commands not previously encountered, which is why the collector records detailed capability and failure information.
+Progress messages appear during large file copies and after groups of files are copied or content-scanned. A long-running scan can still require patience on slow QNX flash storage.
 
-## Installation on the M.I.B. SD card
+## Outputs
 
-1. Remove the M.I.B. SD card from the vehicle and open it on a computer.
-2. Open the `mod` folder on the SD card.
-3. If `mod/custom.sh` already contains something you want to keep, back it up first, for example as `custom.sh.bak`.
-4. Download the collector [`custom.sh`](custom.sh).
-5. Copy it to the SD card as:
+A new SD directory (`MIB2_SOFTWARE_COLLECTOR_PID_...`, with collision suffix if needed) contains:
 
-   ```text
-   /mod/custom.sh
-   ```
+- `COLLECTION_COMPLETE.txt` (only when fully verified, including any stated limitations), or `COLLECTION_INCOMPLETE.txt`.
+- `collector.log`, `collector_source.sh`, `capabilities.txt`, `limitations.txt`, `copy_errors.tsv`, `manifest.tsv`.
+- `system/`: system diagnostics, identity candidates and summary.
+- `discovery/`: complete filesystem path index, content hits, optional shared library dependency evidence and software identity candidates.
+- `files/`: selected firmware binaries and configs preserving the source's filesystem layout.
 
-6. Make sure the filename is exactly `custom.sh`, not `custom.sh.txt`.
-7. Safely eject the SD card from the computer.
+ZIP and send the **entire generated folder** to the maintainer. Do not publish a collection without reviewing it: binaries and metadata can contain device-specific details.
 
-M.I.B. itself uses `/mod/custom.sh` for its custom-script launcher.
+## Important limitations
 
-## Running the collector
+- No shell-only extractor can guarantee finding every relevant implementation detail on every firmware. The path index is provided for subsequent manual discovery and verification.
+- On K2161, no verified stock `strings` or checksum utility was available in the October 10 test log. The collector therefore uses supported filename/content search and byte-count verification and marks that reduced assurance on the output.
+- This script does **not** guarantee an MMI cannot be affected by excessive I/O or by defects in the M.I.B. launcher. Read-only refers to vehicle storage modification, not zero runtime resource usage.
+- The first in-car test should use a healthy SD with sufficient space; do not run during firmware updates or other critical actions.
 
-1. Insert the M.I.B. SD card into **SD1**.
-2. Open the **Green Engineering Menu (GEM)**.
-3. Open **M.I.B.**.
-4. Open **Advanced Settings**.
-5. Select:
+## Optional diagnostic environment overrides
 
-   ```text
-   Run /mod/custom.sh from m.i.b. SD
-   ```
-
-6. M.I.B. may show its normal generic warning about programming/flashing. The collector itself does not flash or patch the unit.
-7. Leave the SD card inserted and let the collector finish. **Do not press Back and do not remove the SD card while it is working.**
-8. The collector shows simple numbered progress steps. Searching can take a few minutes depending on the unit and firmware.
-9. Remove the SD card **only after** the collector displays:
-
-   ```text
-   It is now SAFE TO REMOVE THE SD CARD.
-   ```
-
-In short, the menu path is:
-
-```text
-GEM → M.I.B. → Advanced Settings → Run /mod/custom.sh from m.i.b. SD
-```
-
-## After collection
-
-On the SD card there will be a new folder with a descriptive name similar to:
-
-```text
-MIB2_SKODA_MHI2_ER_SKG13_P4523_1_20260924_135524
-```
-
-The exact name is generated from the detected brand/software information and collection date whenever those values can be identified.
-
-A successful collection contains `COLLECTION_COMPLETE.txt`. Open it and confirm it contains:
-
-```text
-Status: COMPLETE
-```
-
-Then ZIP the **entire generated folder** on your computer and send the ZIP to the project maintainer. Do not send only individual binaries; the logs, manifests, identity data, and directory structure are important for comparing firmware variants.
-
-The collector intentionally leaves the result as a normal folder on the MIB unit instead of spending extra time and CPU creating an archive there. ZIP it on the computer afterwards.
-
-## Main output files
-
-Typical output includes:
-
-```text
-COLLECTION_COMPLETE.txt
-collector.log
-collector_source.sh
-manifest.tsv
-capabilities.txt
-
-system/
-  identity.txt
-  system_info.txt
-  mounts.txt
-  df.txt
-  sd_card_check.txt
-  collection_summary.txt
-
-discovery/
-  filesystem_inventory.txt
-  identity_candidates.txt
-  relevant_matches.txt
-  string_match_evidence.txt
-  dependency_names.txt
-
-files/
-  ...collected firmware files with target paths preserved...
-```
-
-`collector.log` is intentionally detailed. It records command/tool selection, fallbacks, scan locations, matches, copies, failures, hashes, SD-card checks, and final verification so failed or unusual runs can be diagnosed without asking the vehicle owner to reproduce every step manually.
-
-## If something goes wrong
-
-### `COLLECTION NOT STARTED`
-
-The collector could not prove that removable storage was writable. No firmware collection is started in this state. Check the SD card on a computer, including the physical lock switch if present, free space, and filesystem health. Only run the collector again after changing/fixing something.
-
-### `STORAGE ERROR - COLLECTION STOPPED`
-
-The SD card stopped accepting writes during collection. Follow the message on screen, check the card on a computer, and only retry after the storage problem has been addressed.
-
-### `COLLECTION NOT COMPLETED`
-
-Do **not** repeatedly run the script in a loop. The collector already retries its final verification internally. Remove the card when the screen says it is safe, then send the generated collection folder to the project maintainer for inspection.
-
-### The result folder exists but there is no `COLLECTION_COMPLETE.txt`
-
-Treat the run as incomplete. Keep the folder and its `collector.log`; they may show exactly where the run stopped.
-
-## Privacy note
-
-The scan roots are intentionally focused on system code and avoid normal removable media, map/media collections, paired-phone databases, and other obvious user-data areas. However, firmware metadata can still contain device-specific identifiers. Review a collection before posting it publicly. For initial research, sharing the ZIP privately with the project maintainer is preferable.
-
-## Restoring another custom script
-
-After collecting, you can remove this `mod/custom.sh` from the M.I.B. SD card and restore your previous `custom.sh` backup if you had one.
+`MIB2_OUTPUT_ROOT` can specify a supported removable mount path, and `MIB2_SCAN_ROOTS` can specify a whitespace-separated list of firmware source roots. These are for development/diagnostics; for normal car collection, leave them unset. The collector rejects an output root outside recognized removable-mount prefixes and excludes SD/USB roots from its firmware scan.
