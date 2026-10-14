@@ -1,0 +1,28 @@
+name: Sync collector v1.2 release notes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'collector/RELEASE_NOTES.md'
+      - '.github/workflows/sync-collector-v1.2-notes.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-release-notes:
+    if: github.repository == 'edzenis/mib2high-carplay-altscreen-rgi'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update collector v1.2 release text
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release edit collector-v1.2 --notes-file collector/RELEASE_NOTES.md
+          gh release view collector-v1.2 --json body > "$RUNNER_TEMP/release.json"
+          python3 -c 'import json,sys; expected=open(sys.argv[1],encoding="utf-8").read(); actual=json.load(open(sys.argv[2],encoding="utf-8"))["body"]; assert expected.rstrip("\n") == actual.rstrip("\n"), "Published collector notes differ from repository file"' collector/RELEASE_NOTES.md "$RUNNER_TEMP/release.json"
