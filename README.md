@@ -7,7 +7,7 @@ This repository provides community-developed **CarPlay navigation for compatible
 | Release | Purpose | Status |
 | --- | --- | --- |
 | [RGI v1.1](https://github.com/edzenis/mib2high-carplay-altscreen-rgi/releases/tag/v1.1) | Turn arrows and maneuver distances in the factory HUD | Stable, car-tested |
-| [MIB2 High Software Collector v1.0.2](https://github.com/edzenis/mib2high-carplay-altscreen-rgi/releases/tag/collector-v1.0.2) | Read-only firmware/CarPlay/cluster component research | Prerelease |
+| [MIB2 High Software Collector v1.2](https://github.com/edzenis/mib2high-carplay-altscreen-rgi/releases/tag/collector-v1.2) | Focused, read-only AltScreen/RGI firmware research | Prerelease, offline-tested |
 | [AltScreen v1.0](https://github.com/edzenis/mib2high-carplay-altscreen-rgi/releases/tag/altscreen-v1.0) | CarPlay map and instruction card in the instrument cluster, plus HUD RGI | Stable on tested platform |
 
 ## AltScreen v1.0 — what it does

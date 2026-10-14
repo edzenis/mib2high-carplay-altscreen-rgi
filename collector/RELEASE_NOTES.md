@@ -1,20 +1,20 @@
-# MIB2 High Software Collector v1.1.0-rc1
+# MIB2 High Software Collector v1.2
 
-**Pre-release — tested offline, not on an actual MMI.**
+**Firmware-neutral pre-release — offline-tested, not yet car-tested.**
 
-Supersedes `collector-v1.0.2`.
+Replaces `collector-v1.1.0-rc1` for CarPlay AltScreen and route-guidance (RGI) firmware research.
 
-- Verifies SD write/read/rename/delete/sync; retries `mount -uw` only on selected SD mount, then retests.
-- Displays runtime command capability checks on the MMI and uses only tested supported options.
-- Collects targeted firmware essentials plus dynamically discovered AltScreen, CarPlay, RGI, iAP2, DSI, HMI, BAP, cluster/VC/HUD, touch and navigation files for cross-firmware research.
-- Preserves source paths, records inventory, reports coverage limitations, verifies copies, and stops with a clear reason on failure.
-- Read-only to vehicle firmware; only the selected removable storage is written.
-- Ten offline test scenarios passed, including missing QNX utilities, remount and failed copy/sync.
+- Focused filename/path discovery instead of broad binary content scanning and 5,000+ matching files.
+- Preserves a full filesystem path inventory for identifying additional dependencies without copying everything.
+- Uses only external commands demonstrated on a physical MIB2 High K2161; probes required options on the running unit.
+- Eliminates `rmdir` and mandatory `wc`: a calibrated `ls -l` size fallback supports units without `wc`.
+- Retains SD write/read/rename/delete/sync tests, guarded SD-only remount retry, MMI-visible stages, safe failure reporting, and original-path manifests.
+- Retains large file copying with no arbitrary per-file size limit (offline-tested with a 54,701,888-byte `lsd.jxe`).
+- Recognizes validated header-based and headerless `df -k` formats and validates the selected removable mount before trusting free space.
+- Verifies copies by file length and final manifest checks. A length match is **not** cryptographic verification.
 
-**Important:** This exact script has not been car-tested. Check `TEST_REPORT.md` in the ZIP for the scope and limits of validation.
+**Validation:** 11/11 fresh firmware-neutral regression tests passed. Tests are synthetic and do not establish physical compatibility for untested firmware. See `TEST_REPORT.md` in the ZIP.
 
-### Usage
+**Install:** Extract the ZIP to the M.I.B. SD-card root so that `mod/custom.sh` exists, backing up any previous `mod/custom.sh`. Run from M.I.B.'s “Run custom script” menu. Read stage/error messages on the MMI and do not remove SD until it explicitly reports safe removal.
 
-Extract the ZIP to the root of an M.I.B. SD card so the collector is at `/mod/custom.sh`. Back up any existing custom script first. Run from M.I.B.'s Advanced Settings “Run custom script”, and do not remove the card until the MMI explicitly reports it is safe.
-
-The former `collector-v1.0.2` release is superseded and will be removed only after the new asset is uploaded and verified.
+The superseded collector v1.1.0-rc1 release is removed after the new ZIP has been uploaded and verified. The independent RGI v1.1 and AltScreen v1.0 releases are unaffected.

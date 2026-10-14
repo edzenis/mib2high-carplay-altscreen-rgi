@@ -1,0 +1,54 @@
+name: Publish Collector v1.2
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-collector-v1.2.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.repository == 'edzenis/mib2high-carplay-altscreen-rgi'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and verify package
+        shell: bash
+        run: |
+          set -euo pipefail
+          sh -n collector/custom.sh
+          mkdir -p "$RUNNER_TEMP/package/mod"
+          cp collector/custom.sh "$RUNNER_TEMP/package/mod/custom.sh"
+          cp collector/{README.md,TEST_REPORT.md,SHA256SUMS.txt} "$RUNNER_TEMP/package/"
+          cd "$RUNNER_TEMP/package"
+          sha256sum -c SHA256SUMS.txt
+          zip -q -9 "$RUNNER_TEMP/MIB2_Software_Collector_v1.2.zip" mod/custom.sh README.md TEST_REPORT.md SHA256SUMS.txt
+          unzip -t "$RUNNER_TEMP/MIB2_Software_Collector_v1.2.zip"
+      - name: Publish and verify replacement, then retire old collector
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset="$RUNNER_TEMP/MIB2_Software_Collector_v1.2.zip"
+          if gh release view collector-v1.2 >/dev/null 2>&1; then
+            gh release upload collector-v1.2 "$asset" --clobber
+            gh release edit collector-v1.2 --title "MIB2 High Software Collector v1.2" --notes-file collector/RELEASE_NOTES.md --prerelease
+          else
+            gh release create collector-v1.2 "$asset" --prerelease --title "MIB2 High Software Collector v1.2" --notes-file collector/RELEASE_NOTES.md --target "$GITHUB_SHA"
+          fi
+          mkdir -p "$RUNNER_TEMP/verified"
+          gh release download collector-v1.2 --pattern 'MIB2_Software_Collector_v1.2.zip' --dir "$RUNNER_TEMP/verified"
+          cmp "$asset" "$RUNNER_TEMP/verified/MIB2_Software_Collector_v1.2.zip"
+          if gh release view collector-v1.1.0-rc1 >/dev/null 2>&1; then
+            gh release delete collector-v1.1.0-rc1 --yes
+          fi
+          if gh release view collector-v1.1.0-rc1 >/dev/null 2>&1; then
+            echo "Old collector release still exists" >&2
+            exit 1
+          fi
+          gh release view v1.1 >/dev/null
+          gh release view altscreen-v1.0 >/dev/null

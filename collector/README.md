@@ -1,49 +1,43 @@
-# MIB2 High Software Collector — v1.1.0-rc1
+# MIB2 High Software Collector v1.2
 
-This release candidate replaces v1.0.2's command assumptions with **runtime capability tests** and collects a broader set of firmware code/configuration for AltScreen, CarPlay RGI and cross-firmware porting. It is intended for Harman MHI2/QNX 6.5 through M.I.B. It does not install hooks, patch firmware, modify coding, or remount firmware filesystems.
+**Status:** Public v1.2 pre-release. Tested offline only; not yet tested on a physical MMI. Intended for compatible Harman MIB2 High (MHI2/QNX) firmware research supporting CarPlay AltScreen and route guidance (RGI). No specific software train is required or checked.
 
-**Status:** Release candidate. Host/simulated-QNX tests passed. This exact script **has not yet been executed on a physical MMI** and must not be represented as car-tested.
+## Use
 
-## Install and run
+Copy/extract `mod/custom.sh` to the M.I.B. SD card as `/mod/custom.sh`, after backing up any previous custom script. From the car's M.I.B. Advanced Settings, select **Run custom script**. Read the eight stages displayed by the MMI. Never remove the card before the MMI explicitly reports it safe.
 
-Copy `mod/custom.sh` from the release ZIP to the **M.I.B. SD card** as `/mod/custom.sh`. Back up any previous custom script first. Use the M.I.B. SD card in SD1, then on the vehicle open:
+The script does not install AltScreen or RGI, modify OEM files, alter coding, or reboot. It reads firmware files and writes the results **only to an approved removable SD/USB mount**. If the SD cannot be written, the script tries `mount -uw` only on the selected removable mount and retests before proceeding. If a mandatory capability or file-copy verification fails, it prints the failed stage/reason and leaves `COLLECTION_INCOMPLETE.txt` where writable.
 
-`GEM → M.I.B. → Advanced Settings → Run /mod/custom.sh from m.i.b. SD`
+## Collection stages
 
-The script prints eight numbered stages and clear command availability results to the MMI screen. Do not remove the SD until it explicitly states `SAFE TO REMOVE THE SD CARD`. On a failure, the screen shows the failed stage, the reason, and SD-removal guidance. The script never automatically reboots the car.
+1. **SD write test:** Write, read, rename, delete, sync (no `rmdir`).
+2. **Command tests:** Test `cp`, `awk`, `find -name/-print`, `ls -l`, `mkdir -p`, calibrated byte counting (`wc -c` or `ls -l`). Test `df -k` if available. Stop on missing mandatory commands or options. Report all results on the MMI.
+3. **System details:** Capture tested `uname -a` and mount information when available. Recognize validated header-based or six-field headerless `df -k` layouts only when the reported mount corresponds to the selected SD, including M.I.B. `/net/mmx` aliases.
+4. **Discovery:** One read-only filename/path inventory pass through known firmware roots, excluding SD/USB roots; then select narrow filename patterns. **No binary-content scan.**
+5. **Core files:** Copy exact critical CarPlay/iAP2/HMI/DSI/VC names.
+6. **Related files:** Copy a narrow selection of libraries, renderer, navigation/BAP, input, and cluster/HMI configuration files. A full path index remains available for manual investigation.
+7. **Verification:** Verify each copy's byte count against source, and re-check each saved file against its manifest. A failed copy causes an incomplete result.
+8. **Finalize:** Write truthful completion marker, sync, read it back, sync again; only then display SAFE TO REMOVE.
 
-## Ordered workflow
+## Important differences versus v1.1.0-rc1
 
-1. **SD preflight.** Find a removable SD mount, test directory creation, write/read-back, rename, deletion and `sync`. If the test fails, try `mount -uw` **only for that removable SD mount**, then repeat the test. If it still fails, stop with the reason on screen. Firmware mounts are never remounted.
-2. **Command audit.** List all command availability results on screen and in `capabilities.txt`. Test the actual required command options on a small file (e.g. `find -name`, `grep -i -E`, `awk tolower`, `mkdir -p`, `df -k`, copier and checksums). Stop if mandatory features are missing; use supported fallbacks or mark diminished coverage for optional missing tools. K2161 commonly lacks external `tr`, `date`, `strings`, `cksum`, `sha256sum`, and `grep -a`.
-3. **System details.** Probe diagnostic command arguments before using them. Save supported `uname`, `pidin`, `netstat`, mount and filesystem outputs plus SD space information.
-4. **Filesystem discovery.** Recursively inventory firmware code/configuration roots (QNX-direct or `/net/mmx`), not merely a fixed list of expected filenames. Never crawl SD, navigation-map/media collections, or ordinary user storage as an output.
-5. **Filename collection.** Select executables/libraries/configuration by broad case-insensitive naming and component paths, including CarPlay, AirPlay, iAP2, `mm-ipod`, `lsd.jxe`, DSI, HMI, navigation, BAP, cluster, VC/HUD, ViewAreas, touchpad/rotary and firmware identity.
-6. **Content discovery.** Search further plausible code/config files (max 16 MiB per searched file) using *only tested* `strings`/`grep` capabilities. If `strings` and `awk` work, extract and resolve direct `.so` dependency names against the complete inventory. Content-based binary matching without `strings` is best-effort and is explicitly marked as a limitation.
-7. **Integrity checks.** Preserve canonical firmware-relative paths; copy to temporary SD files; validate source vs copied length; verify checksum if a tested hash tool is present; atomically rename copied files; verify every manifest-listed saved file and fail if any file could not be copied. If `df -k` is parseable, retain at least a 512 MiB SD free-space reserve.
-8. **Flush and finish.** Write a truthful `COMPLETE` or `COMPLETE_WITH_LIMITATIONS` marker, sync, read back and sync again before stating it is safe to remove SD. If synchronization fails, remove the success marker where possible and write `COLLECTION_INCOMPLETE.txt`.
+- No `rmdir` dependency; no recursive deletion, so no unverified `rm -r` fallback.
+- When `wc -c` is absent or its probe fails, v1.2 calibrates `ls -l` byte columns using two SD probe files of exactly 10 and 31 bytes, then tests the selected size method before copying.
+- The script's external-command set is restricted to operations previously demonstrated on a physical MIB2 High unit: `mkdir`, `rm`, `mv`, `sync`, `cp`, `awk`, `find`, `wc`, `ls`, `df`, `mount`, `uname`. Required behavior is probed on the executing firmware. There is no `strings`, `tr`, `date`, `rmdir`, `sha256sum`, `printf`, `readelf`, `objdump`, or bundled helper binary.
+- Dynamic paths are still discovered, but copying is based on carefully selected basenames and file types, **not all contents of HMI/navigation directories** or thousands of binary-content searches.
+- **No file-size cap:** Large firmware binaries such as `lsd.jxe` are not rejected by arbitrary limits. With a verified `df -k` layout and matching SD mount, the collector enforces a 512 MiB free-space reserve. Unrecognized layouts are recorded as limitations rather than guessed.
+- All paths copied preserve their original relative source paths under `files/`. Multiple aliases are deduplicated on the destination path.
 
-Progress messages appear during large file copies and after groups of files are copied or content-scanned. A long-running scan can still require patience on slow QNX flash storage.
+## Generated SD directory
 
-## Outputs
+`MIB2_SOFTWARE_COLLECTOR_v1.2_PID_<pid>/` contains `capabilities.txt`, `collector.log`, `manifest.tsv`, `copy_errors.tsv`, `limitations.txt`, `COLLECTION_COMPLETE.txt` (or `COLLECTION_INCOMPLETE.txt`), `system/`, `discovery/`, and `files/`. `discovery/all_firmware_paths.txt` is a path **index**, not copies of all discovered files.
 
-A new SD directory (`MIB2_SOFTWARE_COLLECTOR_PID_...`, with collision suffix if needed) contains:
+`COMPLETE_WITH_LIMITATIONS` is expected when copied files are verified by their lengths without a matching cryptographic hash. A byte-length match does not prove byte-for-byte identity, so the report does not claim stronger verification.
 
-- `COLLECTION_COMPLETE.txt` (only when fully verified, including any stated limitations), or `COLLECTION_INCOMPLETE.txt`.
-- `collector.log`, `collector_source.sh`, `capabilities.txt`, `limitations.txt`, `copy_errors.tsv`, `manifest.tsv`.
-- `system/`: system diagnostics, identity candidates and summary.
-- `discovery/`: complete filesystem path index, content hits, optional shared library dependency evidence and software identity candidates.
-- `files/`: selected firmware binaries and configs preserving the source's filesystem layout.
+## Safety and limits
 
-ZIP and send the **entire generated folder** to the maintainer. Do not publish a collection without reviewing it: binaries and metadata can contain device-specific details.
+No arbitrary assumptions about other MMI firmware versions. Car testing remains necessary: offline mock shell tools do **not** prove actual QNX compatibility. Unsupported diagnostic commands are not called. A `df -k` format the script cannot interpret is reported as an explicit limitation; in that case a 512 MiB reserve is not guaranteed, and any copy error stops the run. The SD filesystem may also impose maximum file sizes independent of this script.
 
-## Important limitations
+Firmware/configuration files can contain device identifiers and potentially sensitive data. Review contents before private sharing.
 
-- No shell-only extractor can guarantee finding every relevant implementation detail on every firmware. The path index is provided for subsequent manual discovery and verification.
-- On K2161, no verified stock `strings` or checksum utility was available in the October 10 test log. The collector therefore uses supported filename/content search and byte-count verification and marks that reduced assurance on the output.
-- This script does **not** guarantee an MMI cannot be affected by excessive I/O or by defects in the M.I.B. launcher. Read-only refers to vehicle storage modification, not zero runtime resource usage.
-- The first in-car test should use a healthy SD with sufficient space; do not run during firmware updates or other critical actions.
-
-## Optional diagnostic environment overrides
-
-`MIB2_OUTPUT_ROOT` can specify a supported removable mount path, and `MIB2_SCAN_ROOTS` can specify a whitespace-separated list of firmware source roots. These are for development/diagnostics; for normal car collection, leave them unset. The collector rejects an output root outside recognized removable-mount prefixes and excludes SD/USB roots from its firmware scan.
+Optional diagnostic overrides (normally unset): `MIB2_OUTPUT_ROOT` accepts only known removable-mount prefixes and `MIB2_SCAN_ROOTS` accepts whitespace-separated firmware roots. Only use trusted paths; SD/USB roots are refused as sources.
