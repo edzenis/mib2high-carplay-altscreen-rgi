@@ -8,7 +8,12 @@ This repository provides community-developed **CarPlay navigation for compatible
 | --- | --- | --- |
 | [RGI v1.1](https://github.com/edzenis/mib2high-carplay-altscreen-rgi/releases/tag/v1.1) | Turn arrows and maneuver distances in the factory HUD | Stable, car-tested |
 | [MIB2 High Software Collector v1.2](https://github.com/edzenis/mib2high-carplay-altscreen-rgi/releases/tag/collector-v1.2) | Focused, read-only AltScreen/RGI firmware research | Prerelease, offline-tested |
+| [AltScreen v1.1](https://github.com/edzenis/mib2high-carplay-altscreen-rgi/releases/tag/altscreen-v1.1) | Modular K2161 CarPlay VC map and HUD integration ([changes](altscreen/v1.1/CHANGES.md)) | Offline-tested; car validation pending; NavActiveIgnore not included |
 | [AltScreen v1.0](https://github.com/edzenis/mib2high-carplay-altscreen-rgi/releases/tag/altscreen-v1.0) | CarPlay map and instruction card in the instrument cluster, plus HUD RGI | Stable on tested platform |
+
+## AltScreen v1.1 — new release
+
+**AltScreen v1.1 does not include or install NavActiveIgnore.** On vehicles requiring NavActiveIgnore to display the map, install that modification separately. The installer leaves existing settings untouched. This update changes cockpit context selection and view areas; read the [full changes](altscreen/v1.1/CHANGES.md), [public source](altscreen/v1.1/) and [release notes](releases/altscreen-v1.1/RELEASE_NOTES.md). AltScreen v1.0 remains available as the previously car-tested baseline; v1.1 has offline validation only.
 
 ## AltScreen v1.0 — what it does
 

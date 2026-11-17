@@ -1,0 +1,44 @@
+name: Publish AltScreen v1.1
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'releases/altscreen-v1.1/**'
+      - '.github/workflows/publish-altscreen-v1.1.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release files
+        uses: actions/checkout@v4
+      - name: Validate release ZIPs and checksums
+        shell: bash
+        working-directory: releases/altscreen-v1.1
+        run: |
+          set -euo pipefail
+          sha256sum -c SHA256SUMS.txt
+          unzip -tq AltScreen-v1.1-source.zip >/dev/null
+          unzip -tq AltScreen-v1.1-install.zip >/dev/null
+          unzip -Z1 AltScreen-v1.1-source.zip | grep -Fx 'java/connectors/k2161/output/BAPBridge.java'
+          unzip -Z1 AltScreen-v1.1-install.zip | grep -Fx 'mod/custom.sh'
+          unzip -p AltScreen-v1.1-install.zip mod/custom.sh | grep -F 'NAVIGNORE=NOT_INCLUDED_INSTALL_SEPARATELY'
+      - name: Publish immutable v1.1 release if tag is free
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view altscreen-v1.1 >/dev/null 2>&1; then
+            echo 'AltScreen v1.1 already exists; leaving it untouched.'
+            exit 0
+          fi
+          gh release create altscreen-v1.1 \
+            releases/altscreen-v1.1/AltScreen-v1.1-install.zip \
+            releases/altscreen-v1.1/AltScreen-v1.1-source.zip \
+            releases/altscreen-v1.1/SHA256SUMS.txt \
+            --target "$GITHUB_SHA" \
+            --title 'AltScreen v1.1 — K2161 Virtual Cockpit / HUD' \
+            --notes-file releases/altscreen-v1.1/RELEASE_NOTES.md

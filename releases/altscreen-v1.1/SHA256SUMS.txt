@@ -1,0 +1,2 @@
+4a2bb4631cbd455d4d41b4df8ab077ce88d023a74121f499839422dc72aedcd8  AltScreen-v1.1-source.zip
+ce89d59465c3152f9aa56d739439b31357a0d3c6d469b54d8d5d4e3eea2960e0  AltScreen-v1.1-install.zip

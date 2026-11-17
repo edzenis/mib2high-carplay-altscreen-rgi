@@ -1,0 +1,14 @@
+connectors/k2161/composition/Activator.java
+connectors/k2161/input/CarPlayLifecycle.java
+connectors/k2161/input/K2161TouchpadAdapter.java
+connectors/k2161/input/RouteGuidance.java
+connectors/k2161/output/BAPBridge.java
+connectors/k2161/output/K2161CarPlayButtonOutput.java
+connectors/k2161/output/K2161GatedCombiService.java
+connectors/k2161/output/K2161HudOutput.java
+connectors/k2161/output/K2161ManeuverAdapter.java
+connectors/k2161/output/K2161RouteGuidanceOwnership.java
+connectors/k2161/output/ManeuverMapper.java
+connectors/k2161/output/SideStreets.java
+connectors/k2161/output/K2161VcTrace.java
+connectors/k2161/output/K2161FactoryTrace.java

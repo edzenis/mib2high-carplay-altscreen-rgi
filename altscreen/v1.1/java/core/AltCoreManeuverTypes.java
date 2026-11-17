@@ -1,0 +1,64 @@
+package com.luka.carplay.routeguidance;
+/** Apple iAP2 maneuvers and junction semantics; no Audi/BAP mapping. */
+public class AltCoreManeuverTypes {
+    protected AltCoreManeuverTypes() {}
+    public static final int JUNCTION_SINGLE_INTERSECTION = 0;
+    public static final int JUNCTION_ROUNDABOUT = 1;
+    public static final int DRIVING_SIDE_RIGHT = 0;
+    public static final int DRIVING_SIDE_LEFT = 1;
+    public static final int MT_NOT_SET                    = -1;
+    public static final int MT_NO_TURN                    = 0;
+    public static final int MT_LEFT_TURN                  = 1;
+    public static final int MT_RIGHT_TURN                 = 2;
+    public static final int MT_STRAIGHT_AHEAD             = 3;
+    public static final int MT_U_TURN                     = 4;
+    public static final int MT_FOLLOW_ROAD                = 5;   /* "CONTINUE" in the reference implementation */
+    public static final int MT_ENTER_ROUNDABOUT           = 6;
+    public static final int MT_EXIT_ROUNDABOUT            = 7;
+    public static final int MT_OFF_RAMP                   = 8;
+    public static final int MT_ON_RAMP                    = 9;
+    public static final int MT_ARRIVE_END_OF_NAVIGATION   = 10;
+    public static final int MT_START_ROUTE                = 11;  /* "PROCEED_TO_BEGINNING_OF_ROUTE" in the reference implementation */
+    public static final int MT_ARRIVE_AT_DESTINATION      = 12;  /* "ARRIVE" in the reference implementation */
+    public static final int MT_KEEP_LEFT                  = 13;
+    public static final int MT_KEEP_RIGHT                 = 14;
+    public static final int MT_ENTER_FERRY                = 15;
+    public static final int MT_EXIT_FERRY                 = 16;
+    public static final int MT_CHANGE_FERRY               = 17;
+    public static final int MT_START_ROUTE_WITH_U_TURN    = 18;  /* "UTURN_PROCEED_TO_ROUTE" in the reference implementation */
+    public static final int MT_U_TURN_AT_ROUNDABOUT       = 19;  /* "ROUNDABOUT_UTURN" in the reference implementation */
+    public static final int MT_LEFT_TURN_AT_END           = 20;  /* "TURN_LEFT_END_OF_ROAD" in the reference implementation */
+    public static final int MT_RIGHT_TURN_AT_END          = 21;  /* "TURN_RIGHT_END_OF_ROAD" in the reference implementation */
+    public static final int MT_HIGHWAY_OFF_RAMP_LEFT      = 22;
+    public static final int MT_HIGHWAY_OFF_RAMP_RIGHT     = 23;
+    public static final int MT_ARRIVE_DESTINATION_LEFT    = 24;  /* "ARRIVE_LEFT" in the reference implementation */
+    public static final int MT_ARRIVE_DESTINATION_RIGHT   = 25;  /* "ARRIVE_RIGHT" in the reference implementation */
+    public static final int MT_U_TURN_WHEN_POSSIBLE       = 26;
+    public static final int MT_ARRIVE_END_OF_DIRECTIONS   = 27;
+    public static final int MT_ROUNDABOUT_EXIT_1          = 28;
+    public static final int MT_ROUNDABOUT_EXIT_2          = 29;
+    public static final int MT_ROUNDABOUT_EXIT_3          = 30;
+    public static final int MT_ROUNDABOUT_EXIT_4          = 31;
+    public static final int MT_ROUNDABOUT_EXIT_5          = 32;
+    public static final int MT_ROUNDABOUT_EXIT_6          = 33;
+    public static final int MT_ROUNDABOUT_EXIT_7          = 34;
+    public static final int MT_ROUNDABOUT_EXIT_8          = 35;
+    public static final int MT_ROUNDABOUT_EXIT_9          = 36;
+    public static final int MT_ROUNDABOUT_EXIT_10         = 37;
+    public static final int MT_ROUNDABOUT_EXIT_11         = 38;
+    public static final int MT_ROUNDABOUT_EXIT_12         = 39;
+    public static final int MT_ROUNDABOUT_EXIT_13         = 40;
+    public static final int MT_ROUNDABOUT_EXIT_14         = 41;
+    public static final int MT_ROUNDABOUT_EXIT_15         = 42;
+    public static final int MT_ROUNDABOUT_EXIT_16         = 43;
+    public static final int MT_ROUNDABOUT_EXIT_17         = 44;
+    public static final int MT_ROUNDABOUT_EXIT_18         = 45;
+    public static final int MT_ROUNDABOUT_EXIT_19         = 46;
+    public static final int MT_SHARP_LEFT_TURN            = 47;
+    public static final int MT_SHARP_RIGHT_TURN           = 48;
+    public static final int MT_SLIGHT_LEFT_TURN           = 49;
+    public static final int MT_SLIGHT_RIGHT_TURN          = 50;
+    public static final int MT_CHANGE_HIGHWAY             = 51;
+    public static final int MT_CHANGE_HIGHWAY_LEFT        = 52;
+    public static final int MT_CHANGE_HIGHWAY_RIGHT       = 53;
+}

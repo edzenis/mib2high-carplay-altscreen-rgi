@@ -1,0 +1,15 @@
+core/AltCoreGuidanceCoordinator.java
+core/AltCoreGuidanceDispatcher.java
+core/AltCoreGuidanceFrame.java
+core/AltCoreManeuverPolicy.java
+core/AltCoreManeuverTypes.java
+core/AltCoreNavigationReducer.java
+core/AltCoreRoutePolicy.java
+core/AltCoreRouteState.java
+core/AltCoreTouchpadPort.java
+core/GuidanceWorkQueue.java
+core/TouchpadSwipeCore.java
+core/AltCoreSideStreetGeometry.java
+core/AltCoreNavigationEngine.java
+core/AltCoreTripSummary.java
+core/AltCoreSceneSnapshot.java
